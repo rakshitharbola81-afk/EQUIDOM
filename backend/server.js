@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/config/db');
 const scanRoutes = require('./src/routes/scanRoutes');
+const errorHandler = require('./src/middleware/errorHandler');
+const AppError = require('./src/utils/AppError');
 const app = express();
 const PORT = process.env.PORT || 5000;
 connectDB();
@@ -15,7 +17,7 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'active', message: 'EquiDOM API is running' });
 });
 app.use('/api/scan', scanRoutes);
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
     const AppError = require('./src/utils/AppError');
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });

@@ -1,60 +1,91 @@
+// src/services/scannerService.js
 const puppeteer = require('puppeteer');
 const { AxePuppeteer } = require('@axe-core/puppeteer');
 const AppError = require('../utils/AppError');
 
-// Global browser instance (Singleton) so we don't relaunch Chrome on every request
-let browserInstance = null;
-
-async function getBrowser() {
-    if (!browserInstance) {
-        browserInstance = await puppeteer.launch({
-            headless: 'new',
+const runAccessibilityScan = async (url) => {
+    let browser;
+    try {
+        browser = await puppeteer.launch({
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
                 '--disable-gpu'
             ]
         });
-    }
-    return browserInstance;
-}
 
-const runAccessibilityScan = async (url) => {
-    let page = null;
-    try {
-        const browser = await getBrowser();
-        page = await browser.newPage();
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 800 });
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        // OPTIMIZATION: Block images, stylesheets, and fonts to save CPU and speed up crawling
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            const resourceType = req.resourceType();
-            if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
-                req.abort(); // Skip loading heavy assets
-            } else {
-                req.continue();
-            }
+        // Navigate and wait until network is stable
+        await page.goto(url, {
+            waitUntil: ['domcontentloaded', 'networkidle2'],
+            timeout: 30000
         });
 
-        await page.setViewport({ width: 1280, height: 800 });
+        // Ensure the body element is fully loaded before running axe
+        await page.waitForSelector('body', { timeout: 10000 });
 
-        // Navigate with a fast timeout
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
-
-        // Run axe-core audit on the lightweight DOM
+        // Run axe-core accessibility analysis
         const results = await new AxePuppeteer(page).analyze();
 
-        return results;
+        const summary = {
+            critical: 0,
+            serious: 0,
+            moderate: 0,
+            minor: 0
+        };
+
+        const flattenedViolations = [];
+
+        results.violations.forEach(violation => {
+            const impact = violation.impact || 'minor';
+            
+            violation.nodes.forEach(node => {
+                if (summary[impact] !== undefined) {
+                    summary[impact]++;
+                }
+
+                flattenedViolations.push({
+                    id: violation.id,
+                    impact: impact,
+                    description: violation.description,
+                    help: violation.help,
+                    helpUrl: violation.helpUrl,
+                    target: node.target || [],
+                });
+            });
+        });
+
+        const totalViolations = flattenedViolations.length;
+
+        const penalty = (summary.critical * 15) + 
+                        (summary.serious * 10) + 
+                        (summary.moderate * 5) + 
+                        (summary.minor * 2);
+        const accessibilityScore = Math.max(0, 100 - penalty);
+
+        return {
+            url: results.url,
+            timestamp: new Date(),
+            accessibilityScore,
+            totalViolations,
+            summary,
+            violations: flattenedViolations
+        };
+
     } catch (error) {
         throw new AppError(`Failed to scan the target URL: ${error.message}`, 400);
     } finally {
-        // CRITICAL: Always close the tab/page after scanning to prevent memory leaks
-        if (page) {
-            await page.close();
+        if (browser) {
+            await browser.close();
         }
     }
 };
 
-module.exports = { runAccessibilityScan };
+module.exports = {
+    runAccessibilityScan
+};
