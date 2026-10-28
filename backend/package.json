@@ -1,4 +1,12 @@
 {
+  "name": "equidom-backend",
+  "version": "1.0.0",
+  "description": "EquiDOM automated accessibility scanner backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
   "dependencies": {
     "@axe-core/puppeteer": "^4.14.0",
     "cors": "^2.8.6",

@@ -6,10 +6,15 @@ const violationSchema = new mongoose.Schema({
     description: { type: String, required: true },
     help: { type: String },
     helpUrl: { type: String },
+    tags: [String],
     target: [String], 
+    html: { type: String },
+    failureSummary: { type: String },
 
     aiExplanation: { type: String },
-    aiCodeFix: { type: String }
+    aiCodeFix: { type: String },
+    preventionTip: { type: String },
+    effort: { type: String }
 });
 
 const scanResultSchema = new mongoose.Schema({
@@ -23,6 +28,14 @@ const scanResultSchema = new mongoose.Schema({
         serious: { type: Number, default: 0 },
         moderate: { type: Number, default: 0 },
         minor: { type: Number, default: 0 }
+    },
+
+    complianceBreakdown: {
+        wcag2a: { type: Number, default: 0 },
+        wcag2aa: { type: Number, default: 0 },
+        wcag21a: { type: Number, default: 0 },
+        wcag21aa: { type: Number, default: 0 },
+        section508: { type: Number, default: 0 }
     },
 
     violations: [violationSchema]
