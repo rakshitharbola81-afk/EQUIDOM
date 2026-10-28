@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const AppError = require('../utils/AppError');
 const { runAccessibilityScan, runHtmlSnippetScan } = require('../services/scannerService');
 const { enhanceAllViolations } = require('../services/aiService');
+const { createAccessibilityPR } = require('../services/githubService');
 const ScanResult = require('../models/ScanResults');
 const PDFDocument = require('pdfkit');
 
@@ -273,10 +274,96 @@ const downloadPdfReport = async (req, res, next) => {
     }
 };
 
+const triggerAutoPR = async (req, res, next) => {
+    try {
+        const {
+            token,
+            repoOwner,
+            repoName,
+            repoUrl,
+            filePath,
+            fileContent,
+            commitMessage,
+            prTitle,
+            scanId
+        } = req.body;
+
+        const accessToken = token || req.headers.authorization?.replace(/^Bearer\s+/i, '');
+
+        if (!accessToken) {
+            return next(new AppError('GitHub Access Token is required to create a Pull Request. Please connect your GitHub account.', 401));
+        }
+
+        let owner = repoOwner;
+        let name = repoName;
+
+        if (repoUrl && (!owner || !name)) {
+            const cleanUrl = repoUrl.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+            const parts = cleanUrl.split('/');
+            if (parts.length >= 2) {
+                owner = parts[0];
+                name = parts[1];
+            }
+        } else if (owner && owner.includes('/')) {
+            const clean = owner.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+            const parts = clean.split('/');
+            if (parts.length >= 2) {
+                owner = parts[0];
+                name = parts[1];
+            }
+        }
+
+        if (!owner || !name) {
+            return next(new AppError('GitHub repository owner and repository name are required (e.g. owner: "myorg", repo: "myproject").', 400));
+        }
+
+        let contentToCommit = fileContent;
+        if (!contentToCommit && scanId) {
+            if (mongoose.Types.ObjectId.isValid(scanId)) {
+                const scan = await ScanResult.findById(scanId);
+                if (scan && scan.violations && scan.violations.length > 0) {
+                    const fixes = scan.violations
+                        .filter(v => v.aiCodeFix && !v.aiCodeFix.startsWith('Refer to'))
+                        .map(v => `<!-- WCAG Fix for rule ${v.id} (${v.description}) -->\n${v.aiCodeFix}`)
+                        .join('\n\n');
+                    if (fixes) {
+                        contentToCommit = `<!-- ♿ EquiDOM Automated Accessibility Remediations -->\n<!-- Scanned Target: ${scan.url} -->\n\n${fixes}\n`;
+                    }
+                }
+            }
+        }
+
+        if (!contentToCommit) {
+            contentToCommit = '<!-- ♿ EquiDOM Automated Accessibility Remediations Applied -->\n';
+        }
+
+        console.log(`Creating accessibility Pull Request on ${owner}/${name} for file ${filePath || 'index.html'}...`);
+
+        const prData = await createAccessibilityPR({
+            accessToken,
+            repoOwner: owner,
+            repoName: name,
+            filePath: (filePath || 'index.html').trim(),
+            fileContent: contentToCommit,
+            commitMessage: commitMessage || '♿ EquiDom: Automated accessibility compliance fix',
+            prTitle: prTitle || '♿ EquiDom: Automated Accessibility Fixes'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Pull request successfully created on GitHub!',
+            data: prData
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     runScan,
     getScanHistory,
     getScanById,
     reverifyScan,
-    downloadPdfReport
+    downloadPdfReport,
+    triggerAutoPR
 };

@@ -10,7 +10,8 @@ const requiredFunctions = [
     'getScanHistory', 
     'reverifyScan', 
     'downloadPdfReport', 
-    'getScanById'
+    'getScanById',
+    'triggerAutoPR'
 ];
 
 requiredFunctions.forEach(funcName => {
@@ -23,6 +24,7 @@ requiredFunctions.forEach(funcName => {
 
 // 3. Mount routes directly from the verified controller object
 router.post('/', scanController.runScan);
+router.post('/pr', scanController.triggerAutoPR);
 router.get('/history', scanController.getScanHistory);
 router.post('/reverify/:id', scanController.reverifyScan);       
 router.get('/report/pdf/:id', scanController.downloadPdfReport); 

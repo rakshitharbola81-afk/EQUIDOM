@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/config/db');
 const scanRoutes = require('./src/routes/scanRoutes');
+const authRoutes = require('./src/routes/authRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 const app = express();
 
@@ -29,6 +30,7 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'active', message: 'EquiDOM API is running flawlessly' });
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api/scan', scanRoutes);
 
 // Catch-all for unhandled routes
