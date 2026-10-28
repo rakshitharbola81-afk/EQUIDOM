@@ -22,6 +22,12 @@ app.use(cors({
     },
     credentials: true
 }));
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "EQUIDOM backend is running!"
+  });
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));

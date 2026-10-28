@@ -56,30 +56,49 @@ cd backend
 npm install
 
 
-Create a .env file in the backend directory:
+Create a .env file in the backend directory (or copy from `.env.example`):
 
-PORT=5000
+```bash
+PORT=5001
 MONGO_URI=your_mongodb_connection_string
 GROQ_API_KEY=your_groq_api_key
+FRONTEND_URL=http://localhost:5173
+```
+*(Note: Port 5001 avoids macOS AirPlay Receiver port conflicts on 5000).*
 
 
 Setup Frontend
 
+```bash
 cd ../frontend
 npm install
+```
+
+Create a `.env` file in the frontend directory:
+
+```bash
+VITE_API_URL=http://localhost:5001/api
+```
 
 
 Running the Application
 
-Start the Express Server (from /backend)
+You can start both backend and frontend concurrently from the root directory:
 
+```bash
+# From repository root
 npm run dev
+```
 
+Or run them individually:
 
-Start the Vite Frontend (from /frontend)
+```bash
+# Terminal 1: Backend
+npm run dev:backend
 
-npm run dev
-
+# Terminal 2: Frontend
+npm run dev:frontend
+```
 
 Open http://localhost:5173 in your browser.
 

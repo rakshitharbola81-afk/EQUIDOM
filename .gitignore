@@ -1,8 +1,10 @@
 # Dependency directories
 node_modules/
+dist/
 
 # Environment variables (CRITICAL: Never commit your API keys)
 .env
+.env*.local
 
 # npm/yarn debug logs
 npm-debug.log*
