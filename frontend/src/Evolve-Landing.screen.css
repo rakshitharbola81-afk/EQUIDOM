@@ -1,0 +1,7 @@
+/* limit the size of max height elements */
+.h-screen {
+  height: 956px !important;
+}
+.min-h-screen {
+  min-height: 956px !important;
+}

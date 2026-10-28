@@ -1,0 +1,20 @@
+/* Darkens the video behind form pages so light text always has contrast */
+.shell-scrim {
+  background: linear-gradient(
+    to bottom,
+    oklch(0.12 0.01 260 / 0.85),
+    oklch(0.10 0.01 260 / 0.70) 50%,
+    oklch(0.12 0.01 260 / 0.88)
+  );
+  opacity: 0.62;
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.shell-scrim[data-dim="true"] {
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-scrim {
+    transition: none;
+  }
+}
