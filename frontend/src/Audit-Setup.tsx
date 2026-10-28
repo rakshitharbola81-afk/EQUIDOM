@@ -528,7 +528,7 @@ export default function AuditSetup() {
               >
                 <div className="flex flex-col justify-between h-full space-y-2">
                   <div className="text-[11px] font-mono uppercase text-zinc-400 font-medium">Remediation</div>
-                  <div className="text-base font-bold text-white font-mono">Gemini AI</div>
+                  <div className="text-base font-bold text-white font-mono">GROQ AI</div>
                   <div className="text-[11px] text-zinc-400">Root-cause & copy-paste fixes</div>
                 </div>
               </SpotlightCard>
