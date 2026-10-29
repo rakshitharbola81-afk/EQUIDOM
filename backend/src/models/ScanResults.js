@@ -3,18 +3,16 @@ const mongoose = require('mongoose');
 const violationSchema = new mongoose.Schema({
     id: { type: String, required: true },
     impact: { type: String, enum: ['minor', 'moderate', 'serious', 'critical'] },
+    effort: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Low' },
+    tags:[String],
     description: { type: String, required: true },
     help: { type: String },
     helpUrl: { type: String },
-    tags: [String],
     target: [String], 
-    html: { type: String },
-    failureSummary: { type: String },
-
-    aiExplanation: { type: String },
+    originalSnippet: { type: String }, 
     aiCodeFix: { type: String },
-    preventionTip: { type: String },
-    effort: { type: String }
+    aiExplanation: { type: String },
+    preventionTip:{type:String}
 });
 
 const scanResultSchema = new mongoose.Schema({
@@ -29,12 +27,9 @@ const scanResultSchema = new mongoose.Schema({
         moderate: { type: Number, default: 0 },
         minor: { type: Number, default: 0 }
     },
-
     complianceBreakdown: {
         wcag2a: { type: Number, default: 0 },
         wcag2aa: { type: Number, default: 0 },
-        wcag21a: { type: Number, default: 0 },
-        wcag21aa: { type: Number, default: 0 },
         section508: { type: Number, default: 0 }
     },
 

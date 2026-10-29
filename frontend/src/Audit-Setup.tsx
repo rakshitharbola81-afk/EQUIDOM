@@ -166,12 +166,14 @@ export default function AuditSetup() {
       }
       setError("");
       setLoading(true);
+      setCurrentScan(null);
       setReverifyComparison(null);
       try {
         const result = await scanService.runHtmlScan(htmlInput.trim());
         setCurrentScan(result);
         loadHistory();
       } catch (err: any) {
+        setCurrentScan(null);
         setError(err.message || "Failed to scan HTML snippet.");
       } finally {
         setLoading(false);
@@ -187,6 +189,7 @@ export default function AuditSetup() {
 
     setError("");
     setLoading(true);
+    setCurrentScan(null);
     setReverifyComparison(null);
 
     try {
@@ -194,6 +197,7 @@ export default function AuditSetup() {
       setCurrentScan(result);
       loadHistory();
     } catch (err: any) {
+      setCurrentScan(null);
       setError(err.message || "Failed to complete accessibility scan.");
     } finally {
       setLoading(false);

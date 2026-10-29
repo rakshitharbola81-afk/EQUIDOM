@@ -109,6 +109,7 @@ export const App: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setCurrentScan(null);
     setReverifyComparison(null);
 
     try {
@@ -117,6 +118,7 @@ export const App: React.FC = () => {
       setActiveTab('audit');
       loadHistory();
     } catch (err: any) {
+      setCurrentScan(null);
       setError(err.message || 'Failed to complete accessibility scan.');
     } finally {
       setLoading(false);

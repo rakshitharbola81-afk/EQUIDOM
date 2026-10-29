@@ -45,9 +45,11 @@ const runScan = async (req, res, next) => {
             scanData = await runAccessibilityScan(trimmedUrl);
         }
 
-        // 2. Enhance violations with AI analysis & code fixes
-        console.log(`Enhancing ${scanData.violations.length} violations with AI recommendations...`);
-        scanData.violations = await enhanceAllViolations(scanData.violations);
+        // 2. Enhance violations with AI analysis & code fixes if not already enhanced
+        if (scanData.violations && scanData.violations.length > 0 && !scanData.violations[0].aiExplanation) {
+            console.log(`Enhancing ${scanData.violations.length} violations with AI recommendations...`);
+            scanData.violations = await enhanceAllViolations(scanData.violations);
+        }
 
         // 3. Save enriched result into MongoDB
         const savedScan = await ScanResult.create(scanData);
@@ -132,7 +134,9 @@ const reverifyScan = async (req, res, next) => {
             freshScanData = await runAccessibilityScan(targetUrl);
         }
 
-        freshScanData.violations = await enhanceAllViolations(freshScanData.violations);
+        if (freshScanData.violations && freshScanData.violations.length > 0 && !freshScanData.violations[0].aiExplanation) {
+            freshScanData.violations = await enhanceAllViolations(freshScanData.violations);
+        }
         const newScan = await ScanResult.create(freshScanData);
 
         const scoreDiff = newScan.accessibilityScore - previousScan.accessibilityScore;
