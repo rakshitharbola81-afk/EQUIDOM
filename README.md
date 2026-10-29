@@ -1,117 +1,230 @@
-♿ EquiDOM (Web Accessibility Auditor)
+# ♿ EquiDOM — Intelligent Web Accessibility Auditor
 
-Automated WCAG auditing with instant, AI-generated code fixes.
+<p align="center">
+  <img src="https://img.shields.io/badge/WCAG-2.2%20AA%20Compliant-blue?style=for-the-badge&logo=w3c" alt="WCAG 2.2">
+  <img src="https://img.shields.io/badge/Axe--Core-v4.10-red?style=for-the-badge" alt="axe-core">
+  <img src="https://img.shields.io/badge/AI%20Engine-Groq%20%7C%20Llama%203.3-orange?style=for-the-badge&logo=groq" alt="Groq AI">
+  <img src="https://img.shields.io/badge/Stack-React%20%7C%20Node.js%20%7C%20MongoDB-emerald?style=for-the-badge&logo=react" alt="Stack">
+  <img src="https://img.shields.io/badge/Automated-GitHub%20PR%20Remediation-black?style=for-the-badge&logo=github" alt="GitHub PR">
+</p>
 
-Standard accessibility scanners like Google Lighthouse tell you what is broken and give you a cryptic error code. EquiDOM tells you why it's broken in plain English, and generates the exact, copy-pasteable HTML/CSS code required to fix it.
+> **EquiDOM** automates the entire web accessibility auditing and remediation workflow. It scans live websites or raw HTML snippets with **axe-core**, pinpoints WCAG 2.1/2.2 Level A/AA violations, translates cryptic technical errors into plain English with **Groq AI (Llama 3)**, generates verified code patches, and opens automated **GitHub Pull Requests** directly into your repository.
 
-Built for high-velocity development, EquiDOM allows developers to paste a URL or raw HTML snippet, audit it against WCAG standards, apply AI-suggested fixes, and instantly re-score their page.
+---
 
-✨ Core Features
+## 🌟 Why EquiDOM?
 
-Dual-Input Auditing: Scan live URLs via headless browser rendering, or paste raw HTML snippets for instant, pre-deployment checks.
+Standard accessibility scanners (like Lighthouse) only tell you *what* is broken through dense WCAG criteria. **EquiDOM** bridges the developer remediation gap:
 
-Zero False-Positive Engine: Powered by axe-core to ensure only objective WCAG violations are flagged.
+1. **Explains the *Why***: Plain-language explanations detailing the real-world impact on users with visual, auditory, cognitive, or motor impairments.
+2. **Generates the *Fix***: Copy-paste ready HTML, CSS, and ARIA fixes tailored to your exact DOM nodes.
+3. **Automates the *Workflow***: One-click GitHub Pull Request creation that commits fixes straight to a new branch in your repository.
+4. **Validates the *Results***: In-browser re-verification scoring and downloadable, audit-ready PDF reports for enterprise compliance.
 
-AI Plain-Language Translations: Cryptic accessibility errors are passed through the Groq API to generate beginner-friendly explanations.
+---
 
-Actionable Code Generation: Stop reading docs. The AI generates precise, ready-to-use HTML/CSS patches for your exact broken DOM nodes.
+## ✨ Key Features
 
-The Re-Score Loop: Apply the suggested code fixes and re-run the scan to instantly visualize your accessibility score improvements.
+- **🌐 Dual Auditing Modes**
+  - **Live URL Crawling**: Launches a headless Chromium browser instance with full JavaScript hydration, dynamic content rendering, and consent modal handling.
+  - **Raw HTML Auditing**: Paste raw markup or templates for instant pre-commit/pre-deployment checks.
 
-High-Speed Caching: Built-in node-cache bypasses slow browser execution for recently scanned URLs, providing a lightning-fast experience.
+- **🛡️ Bulletproof URL & DNS Validation Engine**
+  - Pre-flight DNS resolution prevents false audits on non-existent domains before launching the browser.
+  - Automatic HTTP response validation catches 404, 403, 410, and soft-404 error pages, preventing misleading reports.
 
-🛠️ Tech Stack
+- **📊 Intelligent Weighted Scoring Model**
+  - Realistic, standardized scoring based on distinct WCAG rules with a diminishing deduction scale for repetitive DOM instances (e.g., repeating navigation links).
 
-Frontend: React, Vite, Tailwind CSS, Shadcn UI
+- **🤖 AI Remediation Lab (Powered by Groq Llama 3)**
+  - Fast, contextual code fixes, prevention tips, and effort estimates (Low / Medium / High).
+  - Built-in deterministic fallbacks for high-availability even during API rate limits.
 
-Backend: Node.js, Express.js
+- **🐙 Automated GitHub Remediation (Auto-PR)**
+  - Connect via GitHub OAuth or Personal Access Token.
+  - Automatically creates a branch (`fix/accessibility-[timestamp]`), commits remediations, and opens a comprehensive Pull Request.
 
-Scanner Engine: Puppeteer, @axe-core/puppeteer
+- **📑 Exportable PDF Reports**
+  - Instant PDF generation with compliance status (WCAG 2.0, 2.1, 2.2, Section 508), severity breakdowns, and actionable developer instructions.
 
-AI & Inference: Groq API (Llama 3)
+- **⚡ Re-Verification & Delta Tracking**
+  - Real-time before/after comparison tracking score improvements and resolved issues after code patches are applied.
 
-Database & Caching: MongoDB, node-cache
+---
 
-🚀 Getting Started
+## 🏗️ System Architecture
 
-Prerequisites
+```mermaid
+graph TD
+    User([Developer / Auditor]) -->|URL or HTML Snippet| Frontend[React + Vite Frontend]
+    Frontend -->|POST /api/scan| API[Express API Server]
+    
+    subgraph Validation & Scanning
+        API -->|DNS & Protocol Check| DNS[DNS Resolver]
+        DNS -->|Valid Host| Headless[Puppeteer Headless Chrome]
+        Headless -->|Inject Engine| Axe[axe-core Engine]
+        Axe -->|Raw Violations JSON| Normalizer[Violation Flattener & Scorer]
+    end
+    
+    subgraph AI Remediation
+        Normalizer -->|Violations + DOM Snippets| Groq[Groq AI - Llama 3.3]
+        Groq -->|Contextual Code Fixes| Enriched[Enriched Audit Report]
+    end
+    
+    subgraph Persistence & Integrations
+        Enriched -->|Save Audit| DB[(MongoDB)]
+        Enriched -->|Download| PDF[PDFKit Generator]
+        Enriched -->|Auto-Remediation| GitHub[GitHub API / Octokit PR]
+    end
 
-Node.js (v18+)
+    Enriched -->|Live Audit Results| Frontend
+```
 
-MongoDB instance (local or Atlas)
+---
 
-Groq API Key
+## 🛠️ Technology Stack
 
-Installation
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Framer Motion, Axios |
+| **Backend** | Node.js, Express.js |
+| **Scanner Engine** | Puppeteer, `@axe-core/puppeteer`, Node `dns` |
+| **AI Inference** | Groq SDK (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`) |
+| **Database & Cache**| MongoDB (Mongoose), `node-cache` |
+| **Reporting & Export**| PDFKit |
+| **DevOps & Integration** | GitHub REST API / Octokit, Concurrently |
 
-Clone the repository
+---
 
-git clone https://github.com/yourusername/equidom.git
-cd equidom
+## 🚀 Quick Start Guide
 
+### Prerequisites
 
-Setup Backend
+- **Node.js**: v18.0.0 or higher
+- **MongoDB**: Local daemon or [MongoDB Atlas](https://www.mongodb.com/atlas) connection string
+- **Groq API Key**: Free API key from [Groq Console](https://console.groq.com)
+- **GitHub OAuth App** *(Optional, for Auto-PR feature)*: Registered on [GitHub Developer Settings](https://github.com/settings/developers)
 
-cd backend
-npm install
+---
 
+### Installation
 
-Create a .env file in the backend directory (or copy from `.env.example`):
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/rakshitharbola81-afk/EQUIDOM.git
+   cd EQUIDOM
+   ```
 
-```bash
+2. **Install all dependencies:**
+   ```bash
+   npm run install:all
+   ```
+
+---
+
+### Environment Setup
+
+#### 1. Backend Configuration (`backend/.env`)
+
+Create a `.env` file inside the `backend/` directory:
+
+```env
 PORT=5001
+NODE_ENV=development
 MONGO_URI=your_mongodb_connection_string
-GROQ_API_KEY=your_groq_api_key
 FRONTEND_URL=http://localhost:5173
+
+# AI Remediations
+GROQ_API_KEY=your_groq_api_key
+
+# GitHub OAuth & Auto-PR (Optional)
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_CALLBACK_URL=http://localhost:5001/api/auth/github/callback
 ```
-*(Note: Port 5001 avoids macOS AirPlay Receiver port conflicts on 5000).*
 
+> **Note:** Port `5001` is used by default to prevent conflicts with the macOS AirPlay Receiver service on port `5000`.
 
-Setup Frontend
+#### 2. Frontend Configuration (`frontend/.env`)
 
-```bash
-cd ../frontend
-npm install
-```
+Create a `.env` file inside the `frontend/` directory:
 
-Create a `.env` file in the frontend directory:
-
-```bash
+```env
 VITE_API_URL=http://localhost:5001/api
 ```
 
+---
 
-Running the Application
+### Running the Application
 
-You can start both backend and frontend concurrently from the root directory:
+Run both frontend and backend concurrently from the root directory:
 
 ```bash
-# From repository root
 npm run dev
 ```
 
-Or run them individually:
+Or run each service separately:
 
 ```bash
-# Terminal 1: Backend
+# Terminal 1: Backend API (port 5001)
 npm run dev:backend
 
-# Terminal 2: Frontend
+# Terminal 2: Frontend Client (port 5173 or 5174)
 npm run dev:frontend
 ```
 
-Open http://localhost:5173 in your browser.
+Open **`http://localhost:5173`** in your browser.
 
-🧠 How it Works (Architecture)
+---
 
-The React frontend sends a target URL to the Express backend.
+## 🔌 API Reference
 
-Express launches a headless Puppeteer instance to fully render the client-side JavaScript and DOM.
+### Audits & Scans
 
-Axe-core is injected into the page, extracting a JSON tree of exact WCAG violations.
+| Method | Endpoint | Description | Payload |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/scan` | Run audit on URL or raw HTML | `{ "url": "https://example.com" }` or `{ "html": "..." }` |
+| `GET` | `/api/scan/history` | Fetch recent 20 audits | — |
+| `GET` | `/api/scan/:id` | Fetch specific audit by ID | — |
+| `POST` | `/api/scan/reverify/:id` | Re-scan page to compare score delta | `{ "html": "..." }` *(for snippets)* |
+| `GET` | `/api/scan/report/pdf/:id` | Download formatted PDF audit report | — |
+| `POST` | `/api/scan/pr` | Create automated GitHub Pull Request | `{ "repoUrl", "filePath", "fileContent" }` |
 
-The heavily nested JSON is parsed and sent to the Groq API with a highly-tuned system prompt.
+### GitHub OAuth
 
-Groq streams back plain-language contexts and precise code fixes.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/auth/github` | Redirects to GitHub OAuth consent page |
+| `GET` | `/api/auth/github/callback` | OAuth redirect callback handler |
+| `GET` | `/api/auth/status` | Verify connected GitHub token status |
 
-The entire dataset is saved to MongoDB and temporarily stored in node-cache before being returned to the user dashboard.
+---
+
+## 📋 Evaluation Criteria & Compliance
+
+EquiDOM tests against:
+- **WCAG 2.0 / 2.1 / 2.2** (Levels A, AA, and critical AAA rules)
+- **Section 508** (US Federal accessibility standard)
+- Core rules audited:
+  - Contrast minimums (`color-contrast`)
+  - Image alternative text (`image-alt`, `area-alt`)
+  - Form & button labels (`button-name`, `label`, `aria-label`)
+  - ARIA markup and landmarks (`region`, `landmark-one-main`)
+  - Semantic structure & document metadata (`html-has-lang`, `document-title`)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
